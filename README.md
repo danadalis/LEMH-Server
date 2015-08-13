@@ -1,3 +1,4 @@
+## **LEMH (nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL)**
 ### **Basics**
 ##### **Initial setup**
 ```
@@ -86,17 +87,24 @@ sudo update-rc.d hhvm defaults
 sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
 ```
 
-##### **Set HHVM to Use Unix Sockets** 
+##### **Set HHVM to Use Unix Sockets**
+Since Unix sockets are faster, and we like that, we're going to want to make 2 quick changes to switch over to using sockets instead of TCP.
 ```
 sudo nano /etc/hhvm/server.ini
 ```
 replace `hhvm.server.port = 9000` with `hhvm.server.file_socket=/var/run/hhvm/hhvm.sock`
+```
+sudo nano /etc/nginx/hhvm.conf
+```
 
-##### **Set Some PHP.ini Settings** 
+replace `fastcgi_pass   127.0.0.1:9000;` with	`fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
+
+##### **PHP.ini Settings** 
+Let's set some quick variables so that HHVM has good timeouts and filesize limits for WordPress. Feel free to adjust these based on your needs
 ```
 sudo nano /etc/hhvm/php.ini
 ```
-Paste this under php options
+Paste this under `; php options`
 
 ```
 max_execution_time = 300
@@ -111,13 +119,15 @@ The latest version of HHVM now supports the `phpinfo` command, so you'll be able
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
 Point your browser to http://ipa.ddr.ess/phpinfo.php.
+
 ----------
-### **.conf Files** 
-If you're following our config entirely, at this point you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and nginx.
+#### **.conf Files** 
+If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and nginx.
 ```
 sudo service nginx restart
 sudo service hhvm restart
 ```
+
 ----------
 ### **MariaDB 10** 
 We're using the latest version of MariaDB instead of MySQL, as the performance is great with WordPress.
