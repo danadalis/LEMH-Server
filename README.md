@@ -64,7 +64,6 @@ sudo chown -hR www-data:www-data /var/log/domains/
 sudo rm -rf /etc/nginx/sites-enabled
 sudo rm -rf /etc/nginx/sites-available
 ```
-At this point nginx should be fully installed.
 
 You can start the service by typing `service nginx start`
 
@@ -112,7 +111,13 @@ The latest version of HHVM now supports the `phpinfo` command, so you'll be able
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
 Point your browser to http://ipa.ddr.ess/phpinfo.php.
-
+----------
+### **.conf Files** 
+If you're following our config entirely, at this point you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and nginx.
+```
+sudo service nginx restart
+sudo service hhvm restart
+```
 ----------
 ### **MariaDB 10** 
 We're using the latest version of MariaDB instead of MySQL, as the performance is great with WordPress.
