@@ -29,7 +29,7 @@ service ssh restart
 ----------
 
 ### **Nginx**
-We'll be using the nginx-extras found on the Launchpad Nginx Mainline PPA because this comes pre-installed with the More Headers and FastCGI purge modules. If you need different modules you'll to compile Nginx from source instead. 
+We'll be using the nginx-extras found on the Launchpad Nginx Mainline PPA because this comes pre-installed with the More Headers and FastCGI Purge modules. If you need different modules you'll to compile Nginx from source instead. 
 
 *NOTE: You'll probably be using an old version of OpenSSL. If you need 1.0.2 or newer you'll also need to compile from source.*
 
