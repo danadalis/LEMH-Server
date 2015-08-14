@@ -54,7 +54,7 @@ sudo nano /etc/nginx/nginx.conf
 ```
 
 ##### **Creating Directories and Setting Permissions** 
-Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `domain.com.conf` files to log to the standard `/var/log` directory but to a dedicated folder like nginx or hhvm have.
+Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to the standard `/var/log` directory but to a dedicated folder like nginx or hhvm have.
 ```
 sudo mkdir -p /var/www
 sudo mkdir -p /var/www/html
@@ -76,7 +76,7 @@ echo deb http://dl.hhvm.com/ubuntu trusty main | tee /etc/apt/sources.list.d/hhv
 sudo apt-get update && apt-get install hhvm -y
 sudo /usr/share/hhvm/install_fastcgi.sh
 ```
-*NOTE: `install_fastcgi.sh` can be flaky sometimes and may not work. Instead, add `include hhvm.conf;` to your domain.com.conf files. Our config already reflects that step.*
+*NOTE: `install_fastcgi.sh` can be flaky sometimes and may not work. If it gives you an error, simply add `include hhvm.conf;` to 'yourdomain.com.conf'. Our config already reflects that step.*
 ```
 sudo service hhvm restart
 sudo service nginx restart
