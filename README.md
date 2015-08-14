@@ -1,5 +1,12 @@
 ## **LEMH on Ubuntu 14.04 Trusty**
-## **Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL)**
+## **Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL**
+
+
+ We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache to feed visitors cached pages, we're bypassing the more resource intensive solutions based of PHP and WordPress like W3 Total Cache or WP Super Cache. 
+ 
+ *Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image. Your milage may vary depending on your chosen host. With that in mind, we've tried to address many common hurdles you might face.*
+ 
+----------
 ### **Basics**
 ##### **Initial setup**
 ```
@@ -220,10 +227,58 @@ sudo openssl req -x509 -nodes -days 365000 -newkey rsa:2048 -keyout /etc/nginx/s
 cd /etc/nginx/ssl
 openssl dhparam -out yourdomain.pem 2048
 ```
+### **Nginx Helper** 
+If you're following our entire config using FastCGI Cache, you'll want a way to purge the cache when you make changes to the site. The guys at RTCamp have created just such a plugin, which we'll be utilizing to handle this task. Grab this plugin from https://wordpress.org/plugins/nginx-helper/.
+
+Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want, our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`
+
+##### **Checking FastCGI Cache** 
+It's always a good idea to make sure that what you think is working is actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookie types that we want to avoid caching. For this reason, inside `/etc/nginx/hhvm.conf` we've added the line 	`add_header X-Cached $upstream_cache_status;`. This will tell us with certainty whether or not the page being served is the cached version. 
+
+We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal  by typing `curl -v https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog. Finally, you can always just let another site do the hard work for you, like http://web-sniffer.net/.
+
+You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, `X-Cached: MISS`, `X-Cached: EXPIRED`, or `X-Cached: BYPASS`. 
+
+######X-Cached: HIT
+You're being served a cached version of the page.
+
+######X-Cached: MISS 
+The server did not have a cached copy of that page, so you're being fed a live version instead. Initially all pages will show as `X-Cached: MISS`. Once they've been visisted Nginx will store a copy of that code for future visitors. You can set the number of times a page must be visisted before it's caches by altering the `fastcgi_cache_min_uses` inside `fastcgicache.conf`.
+
+######X-Cached: EXPIRED 
+The version that was stored on the server is too old, and you're seeing a live version instead. You can set the amount of time a cached copy is valid for by changing the various `fastcgi_cache_valid` variables inside `fastcgicache.conf`.
+
+######X-Cached: BYPASS 
+We've specifically told Nginx to absolutely not cache a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, any page visisted by a logged in user or recent commenter, or any page visited by a person with certain cookies. You can add to this list inside `hhvm.conf`. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached. If you're running WooCommerce or another complicated plugin that might display sensitive data to visitors, read below.
+
 ----------											
 ### **Optional Stuff** 
+##### **WooCommerce and FastCGI Cache** 
+We really don't want Nginx to cache anything related to WooCommerce, as this could result in customer's information being fed to others. So we're going to tackle this 3 different ways. Our `hhvm.conf` file reflects these changes already, just uncomment the stuff you want to turn on by removing the `#` from those lines.
+
+As you can see below, we're checking a number of locations for pages that we don't want Nginx to cache. The variables `/shop.*|/cart.*|/my-account.*|/checkout.*` should reflect WooCommerce's default page names. The cache will avoid these pages. 
+```
+if ($request_uri ~* "(/shop.*|/cart.*|/my-account.*|/checkout.*|/addons.*|/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {        
+	set $no_cache 1;
+	}
+```
+	
+We'll want to add the variable `wp_woocommerce_session_[^=]*=([^%]+)%7C`. This avoids most woocommerce sessions.
+```
+if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|wp_woocommerce_session_[^=]*=([^%]+)%7C") {        
+	set $no_cache 1;
+	}
+```
+
+We'll also want to to turn on a check to see if a visitor has an item in their cart.
+```
+if ( $cookie_woocommerce_items_in_cart != "1" ) {
+	set $skip_cache 1;
+}
+```
+
 ##### **HHVM and Nginx Timeouts** 
-If you're doing an import into WordPress, or something else that will be processing for along time, you'll want to increase the timeout variables  for HHVM and Nginx. Change these temporarily.
+If you're doing an import into WordPress, or something else that will be processing for along time, you'll want to increase the timeout variables for HHVM and Nginx. Change these temporarily.
 ###### **Nginx** 
 ```
 sudo /etc/nginx/fastcgicache.conf
