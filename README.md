@@ -308,4 +308,4 @@ add_filter( 'jetpack_photon_reject_https', '__return_false' );
 
 *Naturally, this is tutorial  is always subject to change, and could include mistakes or vulnerabilities that might result in damage to your site by malicious parties. We make no guarantee of the performance, and encourage you to read and thoroughly understand each setting and command before you enable it on a live production site.
 
-If we've helped you, or you've given up and want to hire a consultant to set this up for you, visit us at https://VisiStruct.com
+If we've helped you, or you've given up and want to hire a consultant to set this up for you, visit us at https://VisiStruct.com*
