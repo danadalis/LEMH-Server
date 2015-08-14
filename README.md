@@ -1,12 +1,9 @@
 ## **LEMH Server on Ubuntu 14.04 Trusty**
 ## **Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL**
 
-
- We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache to feed visitors cached pages, we're bypassing the more resource intensive solutions based of PHP and WordPress like W3 Total Cache or WP Super Cache. 
+We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based of PHP and WordPress like W3 Total Cache or WP Super Cache. 
  
-One of the things we came across while researching various technologies was that while lots of people were talking about Running Nginx's FastCGI Caching with PHP 5.x, almost nobody was talking about doing it with HHVM. While the methods are very similar, there are a few different things that could confuse a newcommer.
- 
- *Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image with 512MB RAM. Your mileage may vary depending on your chosen host.*
+*Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image with 512MB RAM. Your mileage may vary depending on your chosen host.*
  
 ----------
 ### **Basics**
@@ -110,7 +107,7 @@ sudo nano /etc/nginx/hhvm.conf
 replace `fastcgi_pass   127.0.0.1:9000;` with	`fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
 
 ##### **PHP.ini Settings** 
-Let's set some quick variables so that HHVM has good timeouts and filesize limits for WordPress. Feel free to adjust these based on your needs
+Let's set some quick variables so that HHVM has good timeout and filesize limits for WordPress. Feel free to adjust these based on your needs
 ```
 sudo nano /etc/hhvm/php.ini
 ```
