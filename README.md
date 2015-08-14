@@ -4,7 +4,7 @@
 
  We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache to feed visitors cached pages, we're bypassing the more resource intensive solutions based of PHP and WordPress like W3 Total Cache or WP Super Cache. 
  
- *Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image. Your milage may vary depending on your chosen host. With that in mind, we've tried to address many common hurdles you might face.*
+ *Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image. Your mileage may vary depending on your chosen host. With that in mind, we've tried to address many common hurdles you might face.*
  
 ----------
 ### **Basics**
@@ -305,3 +305,7 @@ Add this code towards the top somewhere nice.
 add_filter( 'jetpack_photon_reject_https', '__return_false' );
 ```
 ### **Done!** 
+
+*Naturally, this is tutorial  is always subject to change, and could include mistakes or vulnerabilities that might result in damage to your site by malicious parties. We make no guarantee of the performance, and encourage you to read and thoroughly understand each setting and command before you enable it on a live production site.
+
+If we've helped you, or you've given up and want to hire a consultant to set this up for you, visit us at https://VisiStruct.com
