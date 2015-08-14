@@ -1,4 +1,5 @@
-## **LEMH (nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL)**
+## **LEMH on Ubuntu 14.04 Trusty**
+## **Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL)**
 ### **Basics**
 ##### **Initial setup**
 ```
@@ -21,8 +22,8 @@ service ssh restart
 ```
 ----------
 
-### **nginx**
-We'll be using the nginx-extras found on the Launchpad Mainline PPA because this comes pre-installed with the More Headers and FastCGI purge modules. If you need different modules you'll to compile nginx from source instead. 
+### **Nginx**
+We'll be using the nginx-extras found on the Launchpad Mainline PPA because this comes pre-installed with the More Headers and FastCGI purge modules. If you need different modules you'll to compile Nginx from source instead. 
 
 *NOTE: You'll probably be using an old version of OpenSSL. If you need 1.0.2 or newer you'll also need to compile from source.*
 
@@ -38,7 +39,7 @@ Paste in 2 lines, then save.
 deb http://ppa.launchpad.net/nginx/development/ubuntu trusty main 
 deb-src http://ppa.launchpad.net/nginx/development/ubuntu trusty main
 ```
-##### **Installing nginx**
+##### **Installing Nginx**
 ```
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 00A6F0A3C300EE8C
 sudo apt-get update && apt-get upgrade -y
@@ -47,14 +48,14 @@ apt-get install nginx-extras
 ```
 Double check that we've got the latest version installed by using the `nginx -Vv` command. This will also list all installed modules, and your openssl version.
 ##### **Set Worker Processes**
-Set worker processes to the number of CPUs you have available. We can find this information by using the lscpu command and editing the nginx.conf file. Enter whatever value `lscpu` lists under `CPU(s):  `
+Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):  `
 ```
 lscpu
 sudo nano /etc/nginx/nginx.conf
 ```
 
 ##### **Creating Directories and Setting Permissions** 
-Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to the standard `/var/log` directory but to a dedicated folder like nginx or hhvm have.
+Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to the standard `/var/log` directory but to a dedicated folder like Nginx or HHVM have.
 ```
 sudo mkdir -p /var/www
 sudo mkdir -p /var/www/html
@@ -122,7 +123,7 @@ Point your browser to http://ipa.ddr.ess/phpinfo.php.
 
 ----------
 #### **.conf Files** 
-If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and nginx.
+If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and Nginx.
 ```
 sudo service nginx restart
 sudo service hhvm restart
@@ -221,9 +222,9 @@ openssl dhparam -out yourdomain.pem 2048
 ```
 ----------											
 ### **Optional Stuff** 
-##### **HHVM and nginx Timeouts** 
-If you're doing an import into WordPress, or something else that will be processing for along time, you'll want to increase the timeout variables  for HHVM and nginx. Change these temporarily.
-###### **nginx** 
+##### **HHVM and Nginx Timeouts** 
+If you're doing an import into WordPress, or something else that will be processing for along time, you'll want to increase the timeout variables  for HHVM and Nginx. Change these temporarily.
+###### **Nginx** 
 ```
 sudo /etc/nginx/fastcgicache.conf
 ```
