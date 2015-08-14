@@ -61,7 +61,7 @@ sudo nano /etc/nginx/nginx.conf
 ```
 
 ##### **Creating Directories and Setting Permissions** 
-Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to the standard `/var/log` directory but to a dedicated folder like Nginx or HHVM have.
+Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to a dedicated folder inside `/var/log`, just like Nginx or HHVM.
 ```
 sudo mkdir -p /var/www
 sudo mkdir -p /var/www/html
