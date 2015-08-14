@@ -83,7 +83,7 @@ echo deb http://dl.hhvm.com/ubuntu trusty main | tee /etc/apt/sources.list.d/hhv
 sudo apt-get update && apt-get install hhvm -y
 sudo /usr/share/hhvm/install_fastcgi.sh
 ```
-*NOTE: `install_fastcgi.sh` can be flaky sometimes and may not work. If it gives you an error, simply add `include hhvm.conf;` to 'yourdomain.com.conf'. Our config already reflects that step.*
+*NOTE: `install_fastcgi.sh` can sometimes be unreliable for a number of reasons, resulting in an error. If this happens, simply add `include hhvm.conf;` to 'yourdomain.com.conf'. Our `yourdomain.com.conf` and `default.conf` already reflect that step.*
 ```
 sudo service hhvm restart
 sudo service nginx restart
@@ -121,7 +121,7 @@ post_max_size = 22M
 upload_max_filesize = 22M
 ```
 ##### **Get Your PHP Installation Info** 
-The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your servers default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
+The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
 ```
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
@@ -129,7 +129,7 @@ Point your browser to http://ipa.ddr.ess/phpinfo.php.
 
 ----------
 #### **.conf Files** 
-If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into the `/etc/nginx/` directory. You'll also want to move the `default.com.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d`. Then restart HHVM and Nginx.
+If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into `/etc/nginx/`. You'll also want to move the `default.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d/`. Then restart HHVM and Nginx.
 ```
 sudo service nginx restart
 sudo service hhvm restart
@@ -153,7 +153,7 @@ Make sure that MariaDB has upgraded to the latest files by running this again.
 sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
 ```
 ##### **Securing MariaDB** 
-MariaDB includes some test users and databases that we don't want to be using in a live production environment. Now that MariaDB is installed, run this command. Since we've already set the admin password, we can say No to the first option. You'll want to say Yes to the rest of the questions.
+MariaDB includes some test users and databases that we don't want to be using in a live production environment. Now that MariaDB is installed, run this command. Since we've already set the admin password, we can hit `N` to the first option. You'll want to hit `Y` to the rest of the questions.
 ```
 mysql_secure_installation
 ```
@@ -189,7 +189,7 @@ Point your browser to http://ipa.ddr.ess/phpmyadmin.
 ----------
 ### **WordPress** 
 ##### **Creating a MySQL Database** 
-We're going to create the database by command because we're cool. You can also do this directly though phpMyAdmin. Replase the `database`, `user`, and `password` entries in the code below.
+We're going to create the database by command linr because we're cool. You can also do this directly though phpMyAdmin, if you're not as cool. Replace the `database`, `user`, and `password` variables in the code below.
 ```
 mysql -u root -p
 CREATE DATABASE database;
@@ -229,12 +229,12 @@ openssl dhparam -out yourdomain.pem 2048
 ### **Nginx Helper** 
 If you're following our entire config using FastCGI Cache, you'll want a way to purge the cache when you make changes to the site. The guys at RTCamp have created just such a plugin, which we'll be utilizing to handle this task. Grab this plugin from https://wordpress.org/plugins/nginx-helper/.
 
-Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want, our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`
+Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want. Our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`
 
 ##### **Checking FastCGI Cache** 
-It's always a good idea to make sure that what you think is working is actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookie types that we want to avoid caching. For this reason, inside `/etc/nginx/hhvm.conf` we've added the line 	`add_header X-Cached $upstream_cache_status;`. This will tell us with certainty whether or not the page being served is the cached version. 
+It's always a good idea to make sure that what you think is working is in fact actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookies that we want to avoid caching. To help shed light on things a bit, we've added the line `add_header X-Cached $upstream_cache_status;` inside `/etc/nginx/hhvm.conf`. This will tell us with certainty whether or not the page being served is the cached version. 
 
-We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal  by typing `curl -v https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog. Finally, you can always just let another site do the hard work for you, like http://web-sniffer.net/.
+We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -v https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog. Finally, you can always just let another site do the hard work for you, like http://web-sniffer.net/.
 
 You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, `X-Cached: MISS`, `X-Cached: EXPIRED`, or `X-Cached: BYPASS`. 
 
@@ -242,20 +242,20 @@ You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, 
 You're being served a cached version of the page.
 
 ######X-Cached: MISS 
-The server did not have a cached copy of that page, so you're being fed a live version instead. Initially all pages will show as `X-Cached: MISS`. Once they've been visisted Nginx will store a copy of that code for future visitors. You can set the number of times a page must be visisted before it's caches by altering the `fastcgi_cache_min_uses` inside `fastcgicache.conf`.
+The server did not have a cached copy of that page, so you're being fed a live version instead. Initially all pages will show as `X-Cached: MISS`. Once they've been visisted, Nginx will store a copy of that code for future visitors. You can set the number of times a page must be visisted before it's cached by altering the `fastcgi_cache_min_uses` inside `fastcgicache.conf`.
 
 ######X-Cached: EXPIRED 
-The version that was stored on the server is too old, and you're seeing a live version instead. You can set the amount of time a cached copy is valid for by changing the various `fastcgi_cache_valid` variables inside `fastcgicache.conf`.
+The version that was stored on the server is too old, and you're seeing a live version instead. You can set the amount of time a cached copy is valid by changing the various `fastcgi_cache_valid` variables inside `fastcgicache.conf`.
 
 ######X-Cached: BYPASS 
-We've specifically told Nginx to absolutely not cache a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, any page visisted by a logged in user or recent commenter, or any page visited by a person with certain cookies. You can add to this list inside `hhvm.conf`. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached. If you're running WooCommerce or another complicated plugin that might display sensitive data to visitors, read below.
+We've told Nginx skip caching a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, or any page visisted by a logged in user or recent commenter. You can add to this list inside `hhvm.conf`. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached. If you're running WooCommerce or another complicated plugin that might display sensitive data to visitors, read below.
 
 ----------											
 ### **Optional Stuff** 
 ##### **WooCommerce and FastCGI Cache** 
-We really don't want Nginx to cache anything related to WooCommerce, as this could result in customer's information being fed to others. So we're going to tackle this 3 different ways. Our `hhvm.conf` file reflects these changes already, just uncomment the stuff you want to turn on by removing the `#` from those lines.
+We really don't want Nginx to cache anything related to WooCommerce, as this could result in a customer's information being fed to others. So we're going to tackle this 3 different ways. Our `hhvm.conf` file reflects these changes already, just uncomment the stuff you want to enable by removing the `#` from those lines.
 
-As you can see below, we're checking a number of locations for pages that we don't want Nginx to cache. The variables `/shop.*|/cart.*|/my-account.*|/checkout.*` should reflect WooCommerce's default page names. The cache will avoid these pages. 
+As you can see below, we're checking a number of locations for pages that we don't want Nginx to cache. The variables `/shop.*|/cart.*|/my-account.*|/checkout.*` should reflect WooCommerce's default page nstructure.
 ```
 if ($request_uri ~* "(/shop.*|/cart.*|/my-account.*|/checkout.*|/addons.*|/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {        
 	set $no_cache 1;
@@ -293,13 +293,13 @@ Change `max_input_time = 60` to  `2000`
 Be sure change them back when you're done.
 
 ##### **Making JetPack's Photon Module Work Better with SSL**
-JetPack is widely used in WordPress installations for good reason. The Photon module doesn't always play nice with WordPress installations that force SSL all the time, resulting in pictures that don't get served by Photon's CDN. A simple code addition tells Photon to stop rejecting images that are served via https.
+JetPack is widely used in WordPress installations for good reason. The Photon module doesn't always play nice with WordPress installations that force SSL all the time, resulting in pictures that don't get served by Photon's CDN. We can create an Nginx rewrite that feeds images over an unsecure connection, but that's not optimal and a waste of processing cycles. A simple code addition tells Photon to stop rejecting images that are served via HTTPS.
 
-Edit your theme's `functions.php`. Add this code towards the top somewhere nice. If you're using a theme that updates frequently you'll want to add a child theme, or you'll need to do this edit every time you update.
+Edit your theme's `functions.php`. Add this code towards the top somewhere nice. If you're using a theme that updates frequently, you'll want to add a child theme. Otherwise you'll need to do this edit every time you update.
 ```
 sudo nano /var/www/yourdomain.com/html/wp-content/themes/your-theme-folder/functions.php
 ```
-Add this code towards the top somewhere nice.
+Add this code towards the top somewhere.
 ```
 add_filter( 'jetpack_photon_reject_https', '__return_false' );
 ```
