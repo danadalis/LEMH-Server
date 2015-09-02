@@ -228,6 +228,7 @@ openssl dhparam -out yourdomain.pem 2048
 ```
 ----------
 ### **Nginx Helper** 
+
 If you're following our entire config using FastCGI Cache, you'll want a way to purge the cache when you make changes to the site. The guys at RTCamp have created just such a plugin, which we'll be utilizing to handle this task. Grab this plugin from https://wordpress.org/plugins/nginx-helper/.
 
 Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want. Our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`
