@@ -232,9 +232,11 @@ openssl dhparam -out yourdomain.pem 2048
 
 If you're following our entire config using FastCGI Cache, you'll want a way to purge the cache when you make changes to the site. The guys at RTCamp have created just such a plugin, which we'll be utilizing to handle this task. Grab this plugin from https://wordpress.org/plugins/nginx-helper/.
 
-Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want. Our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`
+Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want. Our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labled `Enable Nginx Timestamp in HTML`.
+
 ----------
-#### **Checking FastCGI Cache** 
+
+### **Checking FastCGI Cache** 
 It's always a good idea to make sure that what you think is working is in fact actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookies that we want to avoid caching. To help shed light on things a bit, we've added the line `add_header X-Cached $upstream_cache_status;` inside `/etc/nginx/hhvm.conf`. This will tell us with certainty whether or not the page being served is the cached version. 
 
 We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -v https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog. Finally, you can always just let another site do the hard work for you, like http://web-sniffer.net/.
