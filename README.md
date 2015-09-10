@@ -10,7 +10,7 @@ We're going to walk through a basic LEMH stack install, which will be powering a
 ##### **Initial setup**
 ```
 passwd
-apt-get update -y && apt-get upgrade -y && apt-get dist-upgrade -y
+apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
 apt-get install sudo nano wget curl build-essential zlib1g-dev libpcre3 libpcre3-dev software-properties-common -y
 sudo locale-gen en_US.UTF-8
 export LANG=en_US.UTF-8
