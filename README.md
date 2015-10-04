@@ -1,5 +1,5 @@
 ## **LEMH Server on Ubuntu 14.04 Trusty**
-### Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL
+### Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL w/Self-Signed Cert
 
 We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. 
  
@@ -35,9 +35,7 @@ We'll be using the nginx-extras found on the Launchpad Nginx Mainline PPA becaus
 
 ##### **Adding LaunchPad PPA**
 ```
-
 sudo nano /etc/apt/sources.list.d/nginx.list
-
 ```
 Paste in 2 lines, then save.
 
@@ -131,8 +129,7 @@ Point your browser to http://ipa.ddr.ess/phpinfo.php.
 #### **.conf Files** 
 If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into `/etc/nginx/`. You'll also want to move the `default.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d/`. Then restart HHVM and Nginx.
 ```
-sudo service nginx restart
-sudo service hhvm restart
+sudo service nginx restart && sudo service hhvm restart
 ```
 
 ----------
@@ -146,11 +143,11 @@ sudo add-apt-repository 'deb http://sfo1.mirrors.digitalocean.com/mariadb/repo/1
 ##### **Installing MariaDB** 
 At the end of this installation, MariaDB will ask you to set your password, don't lose this!
 ```	
-sudo apt-get update -y && apt-get install mariadb-server -y
+sudo apt-get update && apt-get install mariadb-server -y
 ```
 Make sure that MariaDB has upgraded to the latest files by running this again.
 ```
-sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
 ```
 ##### **Securing MariaDB** 
 MariaDB includes some test users and databases that we don't want to be using in a live production environment. Now that MariaDB is installed, run this command. Since we've already set the admin password, we can hit `N` to the first option. You'll want to hit `Y` to the rest of the questions.
@@ -165,10 +162,20 @@ sudo mysql -v -u root -p
 You can exit MariaDB by typing `exit`
 
 ### **phpMyAdmin** 
-##### **Installing phpMyAdmin** 
-This part is pretty simple, since the repos we're using already will give us phpMyAdmin. During the installation, just hit `tab` and `enter` when the script prompts you to choose apache or lighttpd. We're not using either, but it'll probably install apache anyway. So we'll need to disable it from starting up when we restart.
+##### **Add phpMyAdmin Repo**
 ```
-sudo apt-get install phpmyadmin -y
+sudo nano /etc/apt/sources.list.d/phpMyAdmin.list
+```
+Paste the 2 lines below, then save.
+```
+deb http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu trusty main 
+deb-src http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu trusty main 
+```
+##### **Installing phpMyAdmin** 
+We had some silly issue preventing the installation during one of our installs. If you run into this, it can be bypassed entirely by forcing the installation. We included that command.
+During the installation, just hit `tab` and `enter` when the script prompts you to choose apache or lighttpd. We're not using either, but it'll probably install apache and php5 anyway. So we'll need to disable both from starting when the server restarts.
+```
+sudo apt-get install phpmyadmin --force-yes
 sudo update-rc.d -f apache2 remove
 sudo update-rc.d -f php5 remove
 ```
@@ -178,13 +185,10 @@ sudo ln -s /usr/share/phpmyadmin /var/www/html
 ```
 There's currently a problem with HHVM connecting to the version of phpMyAdmin we installed. To fix this we've got to make a quick edit.
 ```
-sudo nano /usr/share/phpmyadmin/libraries/dbi/mysqli.dbi.lib.php
+sudo nano /etc/phpmyadmin/config-db.php
 ```
-Paste this code towards the top, right above the line `require_once './libraries/logging.lib.php';`
-```
-$GLOBALS['cfg']['Server']['port'] = 3306;
-```
-Point your browser to http://ipa.ddr.ess/phpmyadmin.
+change `$dbport` from `'';` to `'3306';`
+Point your browser to http://ipa.ddr.ess/phpmyadmin
 
 ----------
 ### **WordPress** 
@@ -220,7 +224,7 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ```
 ----------
 ### **Self-Signed SSL Certificate** 
-Here we're going to generate a self-signed SSL certificate. Since we're using CloudFlare anyway, we're going to use an SSL certificate through them. You'll need to set CloudFlare's SSL certificate status to `Full`.
+Here we're going to generate a self-signed SSL certificate. Since we're using CloudFlare anyway, we're going to use a *FREE* SSL certificate through them. You'll need to set CloudFlare's SSL certificate status to `Full` for this to work.
 ```
 sudo openssl req -x509 -nodes -days 365000 -newkey rsa:2048 -keyout /etc/nginx/ssl/yourdomain.com.key -out /etc/nginx/ssl/yourdomain.com.crt
 cd /etc/nginx/ssl
@@ -228,12 +232,14 @@ openssl dhparam -out yourdomain.pem 2048
 ```
 ----------
 
-### **Nginx Helper** 
+### **FastCGI Cache Conditional Purging** 
 
-If you're following our entire config using FastCGI Cache, you'll want a way to purge the cache when you make changes to the site. The guys at RTCamp have created just such a plugin, which we'll be utilizing to handle this task. Grab this plugin from https://wordpress.org/plugins/nginx-helper/.
+You'll want a way to purge the cache when you make changes to the site, such as editing a post, changing a menu, or deleting a comment.
 
-Inside Nginx Helper's settings you'll want to choose `Enable Purge`. Then choose the purging conditions you want. Our personal preference is checking all of the boxes. Finally, if you'd like a timestamped message inside your source code alerting you that Nginx Helper is working and how long it took to generate the page, check the option labeled `Enable Nginx Timestamp in HTML`.
-
+#### **Nginx Cache WordPress Plugin**
+We like Till Krüss' Nginx Cache plugin because it's simple and works regardless what Nginx modules you have installed. 
+At the WordPress Dashboard under `Tools` then `Nginx`,  add the FastCGI cache location `/var/run/nginx-cache` and make sure the box to automatically flush cache when content changes. 
+Download: https://wordpress.org/plugins/nginx-cache/
 ----------
 
 ### **Checking FastCGI Cache** 
