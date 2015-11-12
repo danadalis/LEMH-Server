@@ -266,7 +266,7 @@ openssl dhparam -out yourdomain.com.pem 2048
 
 You'll want a way to purge the cache when you make changes to the site, such as editing a post, changing a menu, or deleting a comment.
 
-#### **Nginx Cache WordPress Plugin**
+##### **Nginx Cache WordPress Plugin**
 
 We like RTCamp's Nginx Helper Plugin. You'll want to go to the WordPress Dashboard, then Settings/ Nginx Helper. Turn on purging, and select the conditions you want to trigger the purge. Finally, select the timestamp option at the bottom to display your page's build time in the source code.
 
