@@ -121,7 +121,6 @@ wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add -
 echo deb http://dl.hhvm.com/ubuntu vivid main | tee /etc/apt/sources.list.d/hhvm.list
 sudo apt-get update && apt-get install hhvm -y
 ```
-sudo service nginx restart && sudo service hhvm restart
 
 ##### **Setting HHVM to Startup** 
 ```
