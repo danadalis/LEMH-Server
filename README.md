@@ -122,7 +122,7 @@ echo deb http://dl.hhvm.com/ubuntu vivid main | tee /etc/apt/sources.list.d/hhvm
 sudo apt-get update && apt-get install hhvm -y
 ```
 
-##### **Setting HHVM to Startup** 
+##### **Setting HHVM to Load at Boot** 
 ```
 sudo update-rc.d hhvm defaults
 sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
@@ -204,11 +204,14 @@ sudo mysql -v -u root -p
 ```
 You can exit MariaDB by typing `exit`
 
-### **phpMyAdmin** 
+### **phpMyAdmin**
+Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to `/var/www/html`, which will make it available at your server's IP address. Alter the lines below to relfect a different location, such as a behind a domain.
+```
 sudo apt-get install phpmyadmin -y
 sudo update-rc.d -f apache2 remove
 sudo update-rc.d -f php5 remove
 sudo ln -s /usr/share/phpmyadmin /var/www/html
+```
 Point your browser to http://ipa.ddr.ess/phpmyadmin
 
 ----------
@@ -264,7 +267,9 @@ openssl dhparam -out yourdomain.com.pem 2048
 You'll want a way to purge the cache when you make changes to the site, such as editing a post, changing a menu, or deleting a comment.
 
 #### **Nginx Cache WordPress Plugin**
+
 We like RTCamp's Nginx Helper Plugin. You'll want to go to the WordPress Dashboard, then Settings/ Nginx Helper. Turn on purging, and select the conditions you want to trigger the purge. Finally, select the timestamp option at the bottom to display your page's build time in the source code.
+
 ----------
 
 ### **Checking FastCGI Cache** 
