@@ -1,17 +1,16 @@
-## **LEMH Server on Ubuntu 14.04 Trusty**
-### Nginx, HHVM, MariaDB 10, FastCGI Cache, and CloudFlare SSL w/Self-Signed Cert
+## **LEMH Server on Ubuntu 15.04 Vivid*
+### Nginx, HHVM, MariaDB 10, FastCGI Cache, HTTP2 support, and CloudFlare SSL w/Self-Signed Cert
 
-We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. 
+We're going to walk through a basic LEMH stack install, which will be powering a RamNode VPS for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB make WordPress faster than you could using any combination of Apache, PHP 5.6, or MySQL. So we're going to utilize the easiest methods of getting a config like this working. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. Finally, we'll be self-signing an SSL certificate since we're going to be using a free SSL certificate issued by CloudFlare.
  
-*Please Note: We're building this off a RamNode VPS using their Ubuntu 14.04 Trusty 64-bit Minimal image with 512MB RAM. Your mileage may vary depending on your chosen host.*
+*Please Note: We're building this off a RamNode VPS using their Ubuntu 15.04 Vivid 64-bit image with 512MB RAM. Your mileage may vary depending on your chosen host.*
  
 ----------
 ### **Basics**
 ##### **Initial setup**
 ```
-passwd
 apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
-apt-get install sudo nano wget curl build-essential zlib1g-dev libpcre3 libpcre3-dev software-properties-common -y
+apt-get install autotools-dev build-essential checkinstall curl debhelper dh-systemd libbz2-dev libexpat-dev  libgd2-noxpm-dev libgd2-xpm-dev libgeoip-dev libgeoip-dev libluajit-5.1-dev libmhash-dev libpam0g-dev libpcre3 libpcre3-dev libpcrecpp0 libperl-dev libssl-dev libxslt-dev libxslt1-dev nano openssl po-debconf software-properties-common sudo tar unzip wget zlib1g zlib1g-dbg zlib1g-dev -y
 sudo locale-gen en_US.UTF-8
 export LANG=en_US.UTF-8
 ```
@@ -29,63 +28,101 @@ service ssh restart
 ----------
 
 ### **Nginx**
-We'll be using the nginx-extras found on the Launchpad Nginx Mainline PPA because this comes pre-installed with the More Headers and FastCGI Purge modules. If you need different modules, you'll have to compile Nginx from source instead. 
+Since HTTP2 requires an OpenSSL version of 1.0.2 or greater, we're going to compile Nginx from source so we can take advantage of this. Even though CloudFlare isn't currently supporting HTTP2 on their end, we'll be ready when they do.
 
-*NOTE: You'll probably be using an old version of OpenSSL. If you need 1.0.2 or newer you'll also need to compile from source.*
-
-##### **Adding LaunchPad PPA**
+##### **Downloading **
+First we'll need to download the latest versions of Nginx and the various moduless we're using.
+You'll want to check their sites to ensure you're downloading the latest version.
+Get the latest versions at: [Nginx](http://nginx.org/en/download.html), [OpenSSL](https://www.openssl.org/source/), [Headers More Module](https://github.com/openresty/headers-more-nginx-module/tags), and [Nginx Cache Purge Module](http://labs.frickle.com/nginx_ngx_cache_purge/)
 ```
-sudo nano /etc/apt/sources.list.d/nginx.list
-```
-Paste in 2 lines, then save.
-
-```
-deb http://ppa.launchpad.net/nginx/development/ubuntu trusty main 
-deb-src http://ppa.launchpad.net/nginx/development/ubuntu trusty main
+cd /usr/src/
+wget http://nginx.org/download/nginx-1.9.6.tar.gz
+tar -xzvf nginx-1.9.6.tar.gz
+wget https://github.com/openresty/headers-more-nginx-module/archive/v0.28.tar.gz
+tar -xzf v0.28.tar.gz
+wget http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz
+tar -xzf ngx_cache_purge-2.3.tar.gz
+wget https://www.openssl.org/source/openssl-1.0.2d.tar.gz
+tar -xzf openssl-1.0.2d.tar.gz
 ```
 ##### **Installing Nginx**
+Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the ./configure command.
 ```
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 00A6F0A3C300EE8C
-sudo apt-get update && apt-get upgrade -y
-sudo apt-get install openssl libssl-dev libperl-dev -y
-apt-get install nginx-extras
+cd nginx-1.9.6
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2d --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_perl_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.28
+make
+make install
 ```
-Double check that we've got the latest version installed by using the `nginx -Vv` command. This will also list all installed modules, and your openssl version.
-##### **Set Worker Processes**
-Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):  `
-```
-lscpu
-sudo nano /etc/nginx/nginx.conf
-```
+Double check that we've got everything installed correctly by using the `nginx -Vv` command. This will also list all installed modules, and your openssl version.
 
 ##### **Creating Directories and Setting Permissions** 
 Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to a dedicated folder inside `/var/log`, just like Nginx or HHVM.
 ```
-sudo mkdir -p /var/www
 sudo mkdir -p /var/www/html
-sudo mkdir /etc/nginx/ssl
-sudo mkdir /var/cache/nginx
+sudo mkdir -p /var/lib/nginx/fastcgi
+sudo mkdir -p /etc/nginx/ssl
+sudo mkdir -p /etc/nginx/conf.d
+sudo mkdir -p /var/cache/nginx
 sudo mkdir -p /var/log/domains
 sudo chown -hR www-data:www-data /var/log/domains/
 sudo rm -rf /etc/nginx/sites-enabled
 sudo rm -rf /etc/nginx/sites-available
 ```
 
-You can start the service by typing `service nginx start`
+##### **Automatically Starting Nginx**
+Now that we've installed Nginx, we'll need to make it start up automatically each time the server reboots. We're going to use Upstart for this.
+```
+sudo nano /lib/systemd/system/nginx.service
+```
+Now paste in the code below, then save.
+```
+# Stop dance for nginx
+# =======================
+#
+# ExecStop sends SIGSTOP (graceful stop) to the nginx process.
+# If, after 5s (--retry QUIT/5) nginx is still running, systemd takes control
+# and sends SIGTERM (fast shutdown) to the main process.
+# After another 5s (TimeoutStopSec=5), and if nginx is alive, systemd sends
+# SIGKILL to all the remaining processes in the process group (KillMode=mixed).
+#
+# nginx signals reference doc:
+# http://nginx.org/en/docs/control.html
+#
+[Unit]
+Description=A high performance web server and a reverse proxy server
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on;'
+ExecStart=/usr/sbin/nginx -g 'daemon on; master_process on;'
+ExecReload=/usr/sbin/nginx -g 'daemon on; master_process on;' -s reload
+ExecStop=-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid
+TimeoutStopSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
+```
+Finally, let's double check that it's working, and then turn on Nginx
+```
+sudo systemctl enable nginx.service
+sudo systemctl start nginx.service
+sudo systemctl status nginx.service
+```
+
+In the future, you can restart Nginx by typing `sudo service nginx restart`
 
 ----------
 ### **HHVM**
 ```
 wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add -
-echo deb http://dl.hhvm.com/ubuntu trusty main | tee /etc/apt/sources.list.d/hhvm.list
+echo deb http://dl.hhvm.com/ubuntu vivid main | tee /etc/apt/sources.list.d/hhvm.list
 sudo apt-get update && apt-get install hhvm -y
-sudo /usr/share/hhvm/install_fastcgi.sh
 ```
-*NOTE: `install_fastcgi.sh` can sometimes be unreliable for a number of reasons, resulting in an error. If this happens, simply add `include hhvm.conf;` to 'yourdomain.com.conf'. Our `yourdomain.com.conf` and `default.conf` already reflect that step.*
-```
-sudo service hhvm restart
-sudo service nginx restart
-```
+sudo service nginx restart && sudo service hhvm restart
+
 ##### **Setting HHVM to Startup** 
 ```
 sudo update-rc.d hhvm defaults
@@ -98,11 +135,8 @@ Since Unix sockets are faster, and we like that, we're going to want to make 2 q
 sudo nano /etc/hhvm/server.ini
 ```
 replace `hhvm.server.port = 9000` with `hhvm.server.file_socket=/var/run/hhvm/hhvm.sock`
-```
-sudo nano /etc/nginx/hhvm.conf
-```
 
-replace `fastcgi_pass   127.0.0.1:9000;` with	`fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
+Since our HHVM.conf file already has sockets enabled, we don't need to edit anything else. But on another server you'd need to replace `fastcgi_pass   127.0.0.1:9000;` with `fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
 
 ##### **PHP.ini Settings** 
 Let's set some quick variables so that HHVM has good timeout and filesize limits for WordPress. Feel free to adjust these based on your needs
@@ -127,18 +161,27 @@ Point your browser to http://ipa.ddr.ess/phpinfo.php.
 
 ----------
 #### **.conf Files** 
-If you're following our config entirely, you'll want to move the `nginx.conf`, `fastcgicache.conf`, `wpsecurity.conf`, `filerules.conf`, and `hhvm.conf` files from this GitHub into `/etc/nginx/`. You'll also want to move the `default.conf` and `yourdomain.com.conf` files into `/etc/nginx/conf.d/`. Then restart HHVM and Nginx.
+Now it's time to move the [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") files into `/etc/nginx/`. 
+
+You'll also want to move the [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
+
+Then restart HHVM and Nginx.
 ```
 sudo service nginx restart && sudo service hhvm restart
 ```
-
+##### **Set Nginx Worker Processes**
+Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `
+```
+lscpu
+sudo nano /etc/nginx/nginx.conf
+```
 ----------
 ### **MariaDB 10** 
 We're using the latest version of MariaDB instead of MySQL, as the performance is great with WordPress.
 ##### **Add MariaDB Repo** 
 ```
 sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-sudo add-apt-repository 'deb http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.0/ubuntu trusty main'
+sudo add-apt-repository 'deb http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.0/ubuntu vivid main'
 ```
 ##### **Installing MariaDB** 
 At the end of this installation, MariaDB will ask you to set your password, don't lose this!
@@ -156,44 +199,23 @@ mysql_secure_installation
 ```
 Finally, you can make sure MariaDB is installed and working correctly by logging using the following command.
 ##### **Log into MariaDB** 
+Test to make sure things are working by logging in to MySQL, then exiting.
 ```
 sudo mysql -v -u root -p
 ```
 You can exit MariaDB by typing `exit`
 
 ### **phpMyAdmin** 
-##### **Add phpMyAdmin Repo**
-```
-sudo nano /etc/apt/sources.list.d/phpMyAdmin.list
-```
-Paste the 2 lines below, then save.
-```
-deb http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu trusty main 
-deb-src http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu trusty main 
-```
-##### **Installing phpMyAdmin** 
-We had some silly issue preventing the installation during one of our installs. If you run into this, it can be bypassed entirely by forcing the installation. We included that command.
-During the installation, just hit `tab` and `enter` when the script prompts you to choose apache or lighttpd. We're not using either, but it'll probably install apache and php5 anyway. So we'll need to disable both from starting when the server restarts.
-```
-sudo apt-get install phpmyadmin --force-yes
+sudo apt-get install phpmyadmin -y
 sudo update-rc.d -f apache2 remove
 sudo update-rc.d -f php5 remove
-```
-Here we're going to make a symbolic link from the phpMyAdmin folder to our default domain's public facing folder. Using this setup, phpMyAdmin will only be viewable by vising your server's IP address directly. 
-```
 sudo ln -s /usr/share/phpmyadmin /var/www/html
-```
-There's currently a problem with HHVM connecting to the version of phpMyAdmin we installed. To fix this we've got to make a quick edit.
-```
-sudo nano /etc/phpmyadmin/config-db.php
-```
-change `$dbport` from `'';` to `'3306';`
 Point your browser to http://ipa.ddr.ess/phpmyadmin
 
 ----------
 ### **WordPress** 
 ##### **Creating a MySQL Database** 
-We're going to create the database by command linr because we're cool. You can also do this directly though phpMyAdmin, if you're not as cool. Replace the `database`, `user`, and `password` variables in the code below.
+We're going to create the database by command line because we're cool. You can also do this directly though phpMyAdmin, if you're not as cool. Replace the `database`, `user`, and `password` variables in the code below.
 ```
 mysql -u root -p
 CREATE DATABASE database;
@@ -222,13 +244,19 @@ find /var/www/yourdomain.com/html/ -type d -exec chmod 755 {} \;
 find /var/www/yourdomain.com/html/ -type f -exec chmod 644 {} \;
 sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ```
+
+##### **Install Nginx Site File**
+Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
+
+Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instanced of `yourdomain.com' to reflect your domain. Save the file and move it info `/etc/nginx/conf.d/'
+
 ----------
 ### **Self-Signed SSL Certificate** 
 Here we're going to generate a self-signed SSL certificate. Since we're using CloudFlare anyway, we're going to use a *FREE* SSL certificate through them. You'll need to set CloudFlare's SSL certificate status to `Full` for this to work.
 ```
 sudo openssl req -x509 -nodes -days 365000 -newkey rsa:2048 -keyout /etc/nginx/ssl/yourdomain.com.key -out /etc/nginx/ssl/yourdomain.com.crt
 cd /etc/nginx/ssl
-openssl dhparam -out yourdomain.pem 2048
+openssl dhparam -out yourdomain.com.pem 2048
 ```
 ----------
 
@@ -237,9 +265,7 @@ openssl dhparam -out yourdomain.pem 2048
 You'll want a way to purge the cache when you make changes to the site, such as editing a post, changing a menu, or deleting a comment.
 
 #### **Nginx Cache WordPress Plugin**
-We like Till Krüss' Nginx Cache plugin because it's simple and works regardless what Nginx modules you have installed. 
-At the WordPress Dashboard under `Tools` then `Nginx`,  add the FastCGI cache location `/var/run/nginx-cache` and make sure the box to automatically flush cache when content changes. 
-Download: https://wordpress.org/plugins/nginx-cache/
+We like RTCamp's Nginx Helper Plugin. You'll want to go to the WordPress Dashboard, then Settings/ Nginx Helper. Turn on purging, and select the conditions you want to trigger the purge. Finally, select the timestamp option at the bottom to display your page's build time in the source code.
 ----------
 
 ### **Checking FastCGI Cache** 
