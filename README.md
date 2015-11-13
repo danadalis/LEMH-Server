@@ -30,7 +30,7 @@ service ssh restart
 ### **Nginx**
 Since HTTP2 requires an OpenSSL version of 1.0.2 or greater, we're going to compile Nginx from source so we can take advantage of this. Even though CloudFlare isn't currently supporting HTTP2 on their end, we'll be ready when they do.
 
-##### *Downloading*
+##### *Download*
 First we'll need to download the latest versions of Nginx and the various modules we're using.
 You'll want to check their sites to ensure you're downloading the latest version.
 Get the latest versions at: [Nginx](http://nginx.org/en/download.html), [OpenSSL](https://www.openssl.org/source/), [Headers More Module](https://github.com/openresty/headers-more-nginx-module/tags), and [Nginx Cache Purge Module](http://labs.frickle.com/nginx_ngx_cache_purge/)
