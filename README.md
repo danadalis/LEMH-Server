@@ -30,8 +30,8 @@ service ssh restart
 ### **Nginx**
 Since HTTP2 requires an OpenSSL version of 1.0.2 or greater, we're going to compile Nginx from source so we can take advantage of this. Even though CloudFlare isn't currently supporting HTTP2 on their end, we'll be ready when they do.
 
-##### **Downloading **
-First we'll need to download the latest versions of Nginx and the various moduless we're using.
+##### **Downloading**
+First we'll need to download the latest versions of Nginx and the various modules we're using.
 You'll want to check their sites to ensure you're downloading the latest version.
 Get the latest versions at: [Nginx](http://nginx.org/en/download.html), [OpenSSL](https://www.openssl.org/source/), [Headers More Module](https://github.com/openresty/headers-more-nginx-module/tags), and [Nginx Cache Purge Module](http://labs.frickle.com/nginx_ngx_cache_purge/)
 ```
@@ -45,6 +45,7 @@ tar -xzf ngx_cache_purge-2.3.tar.gz
 wget https://www.openssl.org/source/openssl-1.0.2d.tar.gz
 tar -xzf openssl-1.0.2d.tar.gz
 ```
+
 ##### **Installing Nginx**
 Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the ./configure command.
 ```
@@ -70,7 +71,7 @@ sudo rm -rf /etc/nginx/sites-available
 ```
 
 ##### **Automatically Starting Nginx**
-Now that we've installed Nginx, we'll need to make it start up automatically each time the server reboots. We're going to use Upstart for this.
+Now that we've installed Nginx, we'll need to make it start up automatically each time the server reboots. Ubuntu 15.04 uses SystemD to handle bootup processing, so that's what we'll be working with.
 ```
 sudo nano /lib/systemd/system/nginx.service
 ```
@@ -105,7 +106,7 @@ KillMode=mixed
 [Install]
 WantedBy=multi-user.target
 ```
-Finally, let's double check that it's working, and then turn on Nginx
+Finally, let's double check that it's working, and then turn on Nginx.
 ```
 sudo systemctl enable nginx.service
 sudo systemctl start nginx.service
@@ -151,18 +152,19 @@ memory_limit = 128M
 post_max_size = 22M
 upload_max_filesize = 22M
 ```
+
 ##### **Get Your PHP Installation Info** 
 The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
 ```
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
 Point your browser to http://ipa.ddr.ess/phpinfo.php.
-
 ----------
-#### **.conf Files** 
-Now it's time to move the [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") files into `/etc/nginx/`. 
 
-You'll also want to move the [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
+#### **.conf Files** 
+Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx/`. 
+
+You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
 
 Then restart HHVM and Nginx.
 ```
@@ -175,6 +177,7 @@ lscpu
 sudo nano /etc/nginx/nginx.conf
 ```
 ----------
+
 ### **MariaDB 10** 
 We're using the latest version of MariaDB instead of MySQL, as the performance is great with WordPress.
 ##### **Add MariaDB Repo** 
@@ -182,6 +185,7 @@ We're using the latest version of MariaDB instead of MySQL, as the performance i
 sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
 sudo add-apt-repository 'deb http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.0/ubuntu vivid main'
 ```
+
 ##### **Installing MariaDB** 
 At the end of this installation, MariaDB will ask you to set your password, don't lose this!
 ```	
@@ -191,6 +195,7 @@ Make sure that MariaDB has upgraded to the latest files by running this again.
 ```
 sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
 ```
+
 ##### **Securing MariaDB** 
 MariaDB includes some test users and databases that we don't want to be using in a live production environment. Now that MariaDB is installed, run this command. Since we've already set the admin password, we can hit `N` to the first option. You'll want to hit `Y` to the rest of the questions.
 ```
@@ -205,7 +210,7 @@ sudo mysql -v -u root -p
 You can exit MariaDB by typing `exit`
 
 ### **phpMyAdmin**
-Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to `/var/www/html`, which will make it available at your server's IP address. Alter the lines below to relfect a different location, such as a behind a domain.
+Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to `/var/www/html`, which will make it available at your server's IP address. Alter the lines below to reflect a different location, such as a behind a domain.
 ```
 sudo apt-get install phpmyadmin -y
 sudo update-rc.d -f apache2 remove
@@ -213,8 +218,8 @@ sudo update-rc.d -f php5 remove
 sudo ln -s /usr/share/phpmyadmin /var/www/html
 ```
 Point your browser to http://ipa.ddr.ess/phpmyadmin
-
 ----------
+
 ### **WordPress** 
 ##### **Creating a MySQL Database** 
 We're going to create the database by command line because we're cool. You can also do this directly though phpMyAdmin, if you're not as cool. Replace the `database`, `user`, and `password` variables in the code below.
@@ -226,6 +231,7 @@ GRANT ALL PRIVILEGES ON database.* TO 'user'@'localhost';
 FLUSH PRIVILEGES;
 exit
 ```
+
 ##### **Install WordPress** 
 We're going to create a few directories needed for WordPress, set the permissions, and download WordPress. We're also going to just remove the Hello Dolly plugin, because obviously.
 ```
@@ -239,6 +245,7 @@ sudo rm -f /var/www/yourdomain.com/html/wp-content/plugins/hello.php
 sudo mkdir -p /var/www/yourdomain.com/html/wp-content/uploads
 ```
 It's time to upload any files you might have (themes, plugins, uploads, etc, wp-config, etc).
+
 ##### **Secure WordPress** 
  Once you're done uploading files, we'll want to secure WordPress' directory and file permissions.
 ```
@@ -250,9 +257,9 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instanced of `yourdomain.com' to reflect your domain. Save the file and move it info `/etc/nginx/conf.d/'
-
+Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of `yourdomain.com` to reflect your domain. Save the file and move it to `/etc/nginx/conf.d/`
 ----------
+
 ### **Self-Signed SSL Certificate** 
 Here we're going to generate a self-signed SSL certificate. Since we're using CloudFlare anyway, we're going to use a *FREE* SSL certificate through them. You'll need to set CloudFlare's SSL certificate status to `Full` for this to work.
 ```
@@ -269,13 +276,13 @@ You'll want a way to purge the cache when you make changes to the site, such as 
 ##### **Nginx Cache WordPress Plugin**
 
 We like RTCamp's Nginx Helper Plugin. You'll want to go to the WordPress Dashboard, then Settings/ Nginx Helper. Turn on purging, and select the conditions you want to trigger the purge. Finally, select the timestamp option at the bottom to display your page's build time in the source code.
-
+Download: [Nginx Helper](https://wordpress.org/plugins/nginx-helper/)
 ----------
 
 ### **Checking FastCGI Cache** 
 It's always a good idea to make sure that what you think is working is in fact actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookies that we want to avoid caching. To help shed light on things a bit, we've added the line `add_header X-Cached $upstream_cache_status;` inside `/etc/nginx/hhvm.conf`. This will tell us with certainty whether or not the page being served is the cached version. 
 
-We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -I https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog. Finally, you can always just let another site do the hard work for you, like http://web-sniffer.net/.
+We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -I https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog.
 
 You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, `X-Cached: MISS`, `X-Cached: EXPIRED`, or `X-Cached: BYPASS`. 
 
@@ -283,15 +290,15 @@ You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, 
 You're being served a cached version of the page.
 
 ######X-Cached: MISS 
-The server did not have a cached copy of that page, so you're being fed a live version instead. Initially all pages will show as `X-Cached: MISS`. Once they've been visisted, Nginx will store a copy of that code for future visitors. You can set the number of times a page must be visisted before it's cached by altering the `fastcgi_cache_min_uses` inside `fastcgicache.conf`.
+The server did not have a cached copy of that page, so you're being fed a live version instead. Initially all pages will show as `X-Cached: MISS`. Once they've been visited, Nginx will store a copy of that code for future visitors.
 
 ######X-Cached: EXPIRED 
-The version that was stored on the server is too old, and you're seeing a live version instead. You can set the amount of time a cached copy is valid by changing the various `fastcgi_cache_valid` variables inside `fastcgicache.conf`.
+The version that was stored on the server is too old, and you're seeing a live version instead.
 
 ######X-Cached: BYPASS 
-We've told Nginx skip caching a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, or any page visisted by a logged in user or recent commenter. You can add to this list inside `hhvm.conf`. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached. If you're running WooCommerce or another complicated plugin that might display sensitive data to visitors, read below.
+We've told Nginx skip caching a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, or any page visited by a logged in user or recent commenter. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached.
+----------				
 
-----------											
 ### **Optional Stuff** 
 ##### **WooCommerce and FastCGI Cache** 
 We really don't want Nginx to cache anything related to WooCommerce, as this could result in a customer's information being fed to others. So we're going to tackle this 3 different ways. Our `hhvm.conf` file reflects these changes already, just uncomment the stuff you want to enable by removing the `#` from those lines.
@@ -324,6 +331,7 @@ If you're doing an import into WordPress, or something else that will be process
 sudo /etc/nginx/fastcgicache.conf
 ```
 Change `fastcgi_read_timeout 300;` from `300` to `2000`
+
 ###### **HHVM** 
 ```
 sudo nano /etc/hhvm/php.ini
