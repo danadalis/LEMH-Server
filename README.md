@@ -6,6 +6,7 @@ We're going to walk through a basic LEMH stack install for hosting WordPress sit
 *Please Note: We're building this off a RamNode VPS using their Ubuntu 15.04 Vivid 64-bit image with 512MB RAM. Your mileage may vary depending on your chosen host.*
  
 ----------
+
 ### **Basics**
 ##### **Initial setup**
 ```
@@ -25,6 +26,7 @@ sudo apt-get autoremove -y && sudo apt-get autoclean -y
 nano /etc/ssh/sshd_config
 service ssh restart
 ```
+
 ----------
 
 ### **Nginx**
@@ -116,6 +118,7 @@ sudo systemctl status nginx.service
 In the future, you can restart Nginx by typing `sudo service nginx restart`
 
 ----------
+
 ### **HHVM**
 ```
 wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add -
@@ -160,6 +163,7 @@ echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
 
 Point your browser to http://ipa.ddr.ess/phpinfo.php.
+
 ----------
 
 #### **.conf Files** 
@@ -177,6 +181,7 @@ Set worker processes to the number of CPUs you have available. We can find this 
 lscpu
 sudo nano /etc/nginx/nginx.conf
 ```
+
 ----------
 
 ### **MariaDB 10** 
@@ -218,7 +223,9 @@ sudo update-rc.d -f apache2 remove
 sudo update-rc.d -f php5 remove
 sudo ln -s /usr/share/phpmyadmin /var/www/html
 ```
+
 Point your browser to http://ipa.ddr.ess/phpmyadmin
+
 ----------
 
 ### **WordPress** 
@@ -259,6 +266,7 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
 Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of `yourdomain.com` to reflect your domain. Save the file and move it to `/etc/nginx/conf.d/`
+
 ----------
 
 ### **Self-Signed SSL Certificate** 
@@ -268,6 +276,7 @@ sudo openssl req -x509 -nodes -days 365000 -newkey rsa:2048 -keyout /etc/nginx/s
 cd /etc/nginx/ssl
 openssl dhparam -out yourdomain.com.pem 2048
 ```
+
 ----------
 
 ### **FastCGI Cache Conditional Purging** 
@@ -278,6 +287,7 @@ You'll want a way to purge the cache when you make changes to the site, such as 
 
 We like RTCamp's Nginx Helper Plugin. You'll want to go to the WordPress Dashboard, then Settings/ Nginx Helper. Turn on purging, and select the conditions you want to trigger the purge. Finally, select the timestamp option at the bottom to display your page's build time in the source code.
 Download: [Nginx Helper](https://wordpress.org/plugins/nginx-helper/)
+
 ----------
 
 ### **Checking FastCGI Cache** 
@@ -298,6 +308,7 @@ The version that was stored on the server is too old, and you're seeing a live v
 
 ######X-Cached: BYPASS 
 We've told Nginx skip caching a page if it matches a set of criteria. For example, we don't want to cache any page beginning with `WP-`, or any page visited by a logged in user or recent commenter. Depending on the plugins you're running, there may be additional things you'll want to set to avoid being cached.
+
 ----------				
 
 ### **Optional Stuff** 
