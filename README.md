@@ -158,6 +158,7 @@ The latest version of HHVM now supports the `phpinfo` command, so you'll be able
 ```
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
+
 Point your browser to http://ipa.ddr.ess/phpinfo.php.
 ----------
 
