@@ -257,7 +257,7 @@ sudo mkdir -p /var/www/yourdomain.com/html/wp-content/uploads
 It's time to upload any files you might have (themes, plugins, uploads, etc, wp-config, etc).
 
 ##### **Secure WordPress** 
- Once you're done uploading files, we'll want to secure WordPress' directory and file permissions.
+Once you're done uploading files, we'll want to secure WordPress' directory and file permissions.
 ```
 find /var/www/yourdomain.com/html/ -type d -exec chmod 755 {} \;
 find /var/www/yourdomain.com/html/ -type f -exec chmod 644 {} \;
