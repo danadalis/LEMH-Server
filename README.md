@@ -17,11 +17,12 @@ export LANG=en_US.UTF-8
 ```
 ##### **Removing Stuff We Don't Need**
 ```
-sudo apt-get remove --purge mysql-server mysql-client mysql-common apache2* php5*
+sudo apt-get remove --purge mysql-server mysql-client mysql-common apache2* php5* -y
 sudo rm -rf /var/lib/mysql
 sudo apt-get autoremove -y && sudo apt-get autoclean -y
 ```
 ##### **Changing SSH Port**
+Change port 22 to whatever number you'd like.
 ```
 nano /etc/ssh/sshd_config
 service ssh restart
@@ -52,7 +53,7 @@ tar -xzf openssl-1.0.2e.tar.gz
 Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the ./configure command.
 ```
 cd nginx-1.9.9
-./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2e --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_perl_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.28
+./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2e --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_perl_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.28
 make
 sudo checkinstall
 ```
@@ -158,32 +159,6 @@ post_max_size = 22M
 upload_max_filesize = 22M
 ```
 
-##### **Get Your PHP Installation Info** 
-The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
-```
-echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
-```
-
-Point your browser to http://ipa.ddr.ess/phpinfo.php.
-
-----------
-
-#### **.conf Files** 
-Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx/`. 
-
-You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
-
-Then restart HHVM and Nginx.
-```
-sudo service nginx restart && sudo service hhvm restart
-```
-##### **Set Nginx Worker Processes**
-Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `
-```
-lscpu
-sudo nano /etc/nginx/nginx.conf
-```
-
 ----------
 
 ### **MariaDB 10** 
@@ -216,6 +191,37 @@ Test to make sure things are working by logging in to MySQL, then exiting.
 sudo mysql -v -u root -p
 ```
 You can exit MariaDB by typing `exit`
+
+----------
+
+### **Making Things Work**
+We're going to take a moment to move some files and verify that things are working.
+
+#### **.conf Files** 
+Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx/`. 
+
+You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
+
+Then restart HHVM and Nginx.
+```
+sudo service nginx restart && sudo service hhvm restart
+```
+##### **Set Nginx Worker Processes**
+Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `
+```
+lscpu
+sudo nano /etc/nginx/nginx.conf
+```
+
+#### **Get Your PHP Installation Info** 
+The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
+```
+echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+```
+
+Point your browser to http://ipa.ddr.ess/phpinfo.php
+
+----------
 
 ### **phpMyAdmin**
 Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to `/var/www/html`, which will make it available at your server's IP address. Alter the lines below to reflect a different location, such as a behind a domain.
