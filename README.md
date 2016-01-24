@@ -142,7 +142,7 @@ sudo nano /etc/hhvm/server.ini
 ```
 replace `hhvm.server.port = 9000` with `hhvm.server.file_socket=/var/run/hhvm/hhvm.sock`
 
-Since our HHVM.conf file already has sockets enabled, we don't need to edit anything else. But on another server you'd need to replace `fastcgi_pass   127.0.0.1:9000;` with `fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
+Since our `HHVM.conf file` already has sockets enabled, we don't need to edit anything else. For reference, you'd need to replace `fastcgi_pass   127.0.0.1:9000;` with `fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
 
 ##### **PHP.ini Settings** 
 Let's set some quick variables so that HHVM has good timeout and filesize limits for WordPress. Feel free to adjust these based on your needs
@@ -184,7 +184,7 @@ MariaDB includes some test users and databases that we don't want to be using in
 ```
 mysql_secure_installation
 ```
-Finally, you can make sure MariaDB is installed and working correctly by logging using the following command.
+
 ##### **Log into MariaDB** 
 Test to make sure things are working by logging in to MySQL, then exiting.
 ```
@@ -206,15 +206,16 @@ Then restart HHVM and Nginx.
 ```
 sudo service nginx restart && sudo service hhvm restart
 ```
+
 ##### **Set Nginx Worker Processes**
-Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `
+Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `. Our config is set to `24`, this may be way too much for your specific server.
 ```
 lscpu
 sudo nano /etc/nginx/nginx.conf
 ```
 
 #### **Get Your PHP Installation Info** 
-The latest version of HHVM now supports the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
+The newer versions of HHVM now support the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
 ```
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
