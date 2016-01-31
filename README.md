@@ -70,7 +70,7 @@ sudo mkdir -p /etc/nginx/ssl
 sudo mkdir -p /etc/nginx/conf.d
 sudo mkdir -p /var/cache/nginx
 sudo mkdir -p /var/log/domains
-sudo chown -hR www-data:www-data /var/log/domains/
+sudo chown -hR www-data:www-data /var/log/domains
 sudo rm -rf /etc/nginx/sites-enabled
 sudo rm -rf /etc/nginx/sites-available
 ```
@@ -186,7 +186,7 @@ mysql_secure_installation
 ```
 
 ##### **Log into MariaDB** 
-Test to make sure things are working by logging in to MySQL, then exiting.
+Test to make sure things are working by logging into MySQL, then exiting.
 ```
 sudo mysql -v -u root -p
 ```
@@ -198,9 +198,9 @@ You can exit MariaDB by typing `exit`
 We're going to take a moment to move some files and verify that things are working.
 
 #### **.conf Files** 
-Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx/`. 
+Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx`. 
 
-You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d/`. 
+You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d`. 
 
 Then restart HHVM and Nginx.
 ```
@@ -274,7 +274,7 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of `yourdomain.com` to reflect your domain. Save the file and move it to `/etc/nginx/conf.d/`
+Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of `yourdomain.com` to reflect your domain. Save the file and move it to `/etc/nginx/conf.d`
 
 ----------
 
@@ -345,34 +345,6 @@ if ( $cookie_woocommerce_items_in_cart != "1" ) {
 }
 ```
 
-##### **HHVM and Nginx Timeouts** 
-If you're doing an import into WordPress, or something else that will be processing for along time, you'll want to increase the timeout variables for HHVM and Nginx. Change these temporarily.
-###### **Nginx** 
-```
-sudo /etc/nginx/fastcgicache.conf
-```
-Change `fastcgi_read_timeout 300;` from `300` to `2000`
-
-###### **HHVM** 
-```
-sudo nano /etc/hhvm/php.ini
-```
-Change `max_execution_time = 300` to `2000`
-Change `max_input_time = 60` to  `2000`
-
-Be sure change them back when you're done.
-
-##### **Making JetPack's Photon Module Work Better with SSL**
-JetPack is widely used in WordPress installations for good reason. The Photon module doesn't always play nice with WordPress installations that force SSL all the time, resulting in pictures that don't get served by Photon's CDN. We can create an Nginx rewrite that feeds images over an unsecure connection, but that's not optimal and a waste of processing cycles. A simple code addition tells Photon to stop rejecting images that are served via HTTPS.
-
-Edit your theme's `functions.php`. Add this code towards the top somewhere nice. If you're using a theme that updates frequently, you'll want to add a child theme. Otherwise you'll need to do this edit every time you update.
-```
-sudo nano /var/www/yourdomain.com/html/wp-content/themes/your-theme-folder/functions.php
-```
-Add this code towards the top somewhere.
-```
-add_filter( 'jetpack_photon_reject_https', '__return_false' );
-```
 ### **Done!** 
 
 *Naturally, this tutorial is always subject to change, and could include mistakes or vulnerabilities that might result in damage to your site by malicious parties. We make no guarantee of the performance, and encourage you to read and thoroughly understand each setting and command before you enable it on a live production site.*
