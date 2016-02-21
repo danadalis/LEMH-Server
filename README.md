@@ -1,7 +1,7 @@
 ## **LEMH Server on Ubuntu 15.04 Vivid**
 ### Nginx Compiled from Source, HHVM, MariaDB 10, FastCGI Cache, HTTP2 support, and CloudFlare SSL with a Self-Signed Cert
 
-We're going to walk through a basic LEMH stack install for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB makes WordPress run faster than other options, so building a setup like this will usually get you the most bang for your hosting buck. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. Finally, we'll be self-signing an SSL certificate since we're going to be using a free SSL certificate issued by CloudFlare.
+We're going to walk through a basic LEMH stack install for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB makes WordPress run faster than other options, so building a setup like this will usually get you the most bang for your hosting buck. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. We'll also be self-signing an SSL certificate on the server-side, since we're going to be using a free SSL certificate issued by CloudFlare.
 
 ----------
 
@@ -48,7 +48,7 @@ tar -xzf openssl-1.0.2f.tar.gz
 ```
 
 ##### **Installing Nginx**
-Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the ./configure command.
+Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the `./configure` command.
 ```
 cd nginx-1.9.10
 ./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2f --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
@@ -60,7 +60,7 @@ Using the checkinstall command tells the server to package our compiled source i
 Double check that we've got everything installed correctly by using the `nginx -Vv` command. This will also list all installed modules, and your openssl version.
 
 ##### **Creating Directories and Setting Permissions** 
-Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our `yourdomain.com.conf` files to log to a dedicated folder inside `/var/log`, just like Nginx or HHVM.
+Here we're going to ensure that the right folders are in place for our config. In addition, since we might be hosting multiple domains on this server, we've told our **yourdomain.com.conf** files to log to a dedicated folder inside **/var/log**, just like Nginx or HHVM.
 ```
 sudo mkdir -p /var/www/html
 sudo mkdir -p /var/lib/nginx/fastcgi
@@ -140,7 +140,7 @@ sudo nano /etc/hhvm/server.ini
 ```
 replace `hhvm.server.port = 9000` with `hhvm.server.file_socket=/var/run/hhvm/hhvm.sock`
 
-Since our `HHVM.conf file` already has sockets enabled, we don't need to edit anything else. For reference, you'd need to replace `fastcgi_pass   127.0.0.1:9000;` with `fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
+Since our **HHVM.conf** file already has sockets enabled, we don't need to edit anything else. For reference, you'd need to replace `fastcgi_pass   127.0.0.1:9000;` with `fastcgi_pass unix:/var/run/hhvm/hhvm.sock;`
 
 ##### **PHP.ini Settings** 
 Let's set some quick variables so that HHVM has good timeout and filesize limits for WordPress. Feel free to adjust these based on your needs
@@ -196,9 +196,9 @@ You can exit MariaDB by typing `exit`
 We're going to take a moment to move some files and verify that things are working.
 
 #### **.conf Files** 
-Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into `/etc/nginx`. 
+Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into **/etc/nginx**. 
 
-You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into `/etc/nginx/conf.d`. 
+You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into **/etc/nginx/conf.d`. 
 
 Then restart HHVM and Nginx.
 ```
@@ -206,14 +206,14 @@ sudo service nginx restart && sudo service hhvm restart
 ```
 
 ##### **Set Nginx Worker Processes**
-Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the `nginx.conf` file. Enter whatever value `lscpu` lists under `CPU(s):   `. Our config is set to `24`, this may be way too much for your specific server.
+Set worker processes to the number of CPUs you have available. We can find this information by using the `lscpu` command and editing the **nginx.conf** file. Enter whatever value `lscpu` lists under `CPU(s):   `. Our config is set to `24`, this may be way too much for your specific server.
 ```
 lscpu
 sudo nano /etc/nginx/nginx.conf
 ```
 
 #### **Get Your PHP Installation Info** 
-The newer versions of HHVM now support the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be `/var/www/html`. By contrast, domains will be using `/var/www/yourdomain.com/html`.
+The newer versions of HHVM now support the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be **/var/www/html**. By contrast, domains will be using **/var/www/yourdomain.com/html**.
 ```
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
@@ -223,7 +223,7 @@ Point your browser to http://ipa.ddr.ess/phpinfo.php
 ----------
 
 ### **phpMyAdmin**
-Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to `/var/www/html`, which will make it available at your server's IP address. Alter the lines below to reflect a different location, such as a behind a domain.
+Since phpMyAdmin is already available through the default Ubuntu 15.04 repos, this part is really easy. We're pointing our phpMyAdmin location to **/var/www/html**, which will make it available at your server's IP address. Alter the lines below to reflect a different location, such as a behind a domain.
 ```
 sudo apt-get install phpmyadmin -y
 sudo update-rc.d -f apache2 remove
@@ -272,7 +272,7 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of `yourdomain.com` to reflect your domain. Save the file and move it to `/etc/nginx/conf.d`
+Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of **yourdomain.com** to reflect your domain. Save the file and move it to **/etc/nginx/conf.d**
 
 ----------
 
@@ -298,9 +298,9 @@ Download: [Nginx Helper](https://wordpress.org/plugins/nginx-helper/)
 ----------
 
 ### **Checking FastCGI Cache** 
-It's always a good idea to make sure that what you think is working is in fact actually working. Since we don't want to serve cached versions of every page on the site, inside `hhvm.conf` we've added a list of pages and cookies that we want to avoid caching. To help shed light on things a bit, we've added the line `add_header X-Cached $upstream_cache_status;` inside `/etc/nginx/hhvm.conf`. This will tell us with certainty whether or not the page being served is the cached version. 
+It's always a good idea to make sure that what you think is working is in fact actually working. Since we don't want to serve cached versions of every page on the site, inside **hhvm.conf** we've added a list of pages and cookies that we want to avoid caching. To help shed light on things a bit, we've added the line `add_header X-Cached $upstream_cache_status;` inside **/etc/nginx/hhvm.conf**. This will tell us with certainty whether or not the page being served is the cached version. 
 
-We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -I https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog.
+We can check the status of any page by viewing the headers that are sent along when you visit it. To do this, you can use a variety of methods. You can use the `CURL` command inside your terminal by typing `curl -I https://yourdomain.com`. Plugins exist for Mozilla FireFox and Google chrome that will make things a bit easier, we prefer Live HTTP Headers for Google Chrome [Live HTTP Headers for Google Chrome](https://chrome.google.com/webstore/detail/live-http-headers/iaiioopjkcekapmldfgbebdclcnpgnlo?utm_source=chrome-app-launcher-info-dialog "Live HTTP Headers for Google Chrome").
 
 You'll encounter 4 different messages based on the cache type. `X-Cached: HIT`, `X-Cached: MISS`, `X-Cached: EXPIRED`, or `X-Cached: BYPASS`. 
 
@@ -320,7 +320,7 @@ We've told Nginx skip caching a page if it matches a set of criteria. For exampl
 
 ### **Optional Stuff** 
 ##### **WooCommerce and FastCGI Cache** 
-We really don't want Nginx to cache anything related to WooCommerce, as this could result in a customer's information being fed to others. So we're going to tackle this 3 different ways. Our `hhvm.conf` file reflects these changes already, just uncomment the stuff you want to enable by removing the `#` from those lines.
+We really don't want Nginx to cache anything related to WooCommerce, as this could result in a customer's information being fed to others. So we're going to tackle this 3 different ways. Our **hhvm.conf** file reflects these changes already, just uncomment the stuff you want to enable by removing the `#` from those lines.
 
 As you can see below, we're checking a number of locations for pages that we don't want Nginx to cache. The variables `/shop.*|/cart.*|/my-account.*|/checkout.*` should reflect WooCommerce's default page nstructure.
 ```
@@ -347,4 +347,4 @@ if ( $cookie_woocommerce_items_in_cart != "1" ) {
 
 *Naturally, this tutorial is always subject to change, and could include mistakes or vulnerabilities that might result in damage to your site by malicious parties. We make no guarantee of the performance, and encourage you to read and thoroughly understand each setting and command before you enable it on a live production site.*
 
-*If we've helped you, or you've given up and want to hire a consultant to set this up for you, visit us at https://VisiStruct.com*
+*If we've helped you, or you've given up and want to hire a consultant to set this up for you, visit us at https://VisiStruct.com [VisiStruct.com](https://VisiStruct.com "VisiStruct.com")*
