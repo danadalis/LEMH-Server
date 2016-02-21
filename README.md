@@ -55,7 +55,7 @@ cd nginx-1.9.11
 make
 sudo checkinstall
 ```
-Using the checkinstall command tells the server to package our compiled source into a more easily managed .deb package file. Move through the prompts, you can tell it not to list the installation files, and yes to exclude them from the package. Since Nginx updates quite frequently, doing this allows us to easily upgrade later on. To upgrade to the latest version, double check Nginx and module versions (as this guide may not be up to date), then simply repeat the installation process above. When prompted, I always edit option 13 to add what version this new package is replacing. Restart Nginx and you should be running the latest version
+Using the checkinstall command tells the server to package our compiled source into a more easily managed .deb package file. Move through the prompts, you can tell it not to list the installation files, and yes to exclude them from the package. Since Nginx updates quite frequently, doing this allows us to easily upgrade later on. To upgrade to the latest version, double check Nginx and module versions (as this guide may not be up to date), then simply repeat the installation process above. Restart Nginx and you should be running the latest version
 
 Double check that we've got everything installed correctly by using the `nginx -Vv` command. This will also list all installed modules, and your openssl version.
 
