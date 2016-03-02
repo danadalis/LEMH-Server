@@ -37,21 +37,21 @@ You'll want to check their sites to ensure you're downloading the latest version
 Get the latest versions at: [Nginx](http://nginx.org/en/download.html), [OpenSSL](https://www.openssl.org/source/), [Headers More Module](https://github.com/openresty/headers-more-nginx-module/tags), and [Nginx Cache Purge Module](http://labs.frickle.com/nginx_ngx_cache_purge/)
 ```
 cd /usr/src/
-wget http://nginx.org/download/nginx-1.9.11.tar.gz
-tar -xzvf nginx-1.9.11.tar.gz
+wget http://nginx.org/download/nginx-1.9.12.tar.gz
+tar -xzvf nginx-1.9.12.tar.gz
 wget https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz
 tar -xzf v0.29.tar.gz
 wget http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz
 tar -xzf ngx_cache_purge-2.3.tar.gz
-wget https://www.openssl.org/source/openssl-1.0.2f.tar.gz
-tar -xzf openssl-1.0.2f.tar.gz
+wget https://www.openssl.org/source/openssl-1.0.2g.tar.gz
+tar -xzf openssl-1.0.2g.tar.gz
 ```
 
 ##### **Installing Nginx**
 Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the `./configure` command.
 ```
-cd nginx-1.9.11
-./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2f --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
+cd nginx-1.9.12
+./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2g --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
 make
 sudo checkinstall
 ```
