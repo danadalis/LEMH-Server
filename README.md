@@ -43,15 +43,15 @@ wget https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz
 tar -xzf v0.29.tar.gz
 wget http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz
 tar -xzf ngx_cache_purge-2.3.tar.gz
-wget https://www.openssl.org/source/openssl-1.0.2g.tar.gz
-tar -xzf openssl-1.0.2g.tar.gz
+wget https://www.openssl.org/source/openssl-1.0.2h.tar.gz
+tar -xzf openssl-1.0.2h.tar.gz
 ```
 
 ##### **Installing Nginx**
 Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the `./configure` command.
 ```
 cd nginx-1.10.0
-./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2g --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
+./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2h --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
 make
 sudo checkinstall
 ```
@@ -198,7 +198,18 @@ We're going to take a moment to move some files and verify that things are worki
 #### **.conf Files** 
 Now it's time to move [nginx.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/nginx.conf "/etc/nginx/nginx.conf"), [wpsecurity.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/wpsecurity.conf "/etc/nginx/wpsecurity.conf"), [fileheaders.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/fileheaders.conf "/etc/nginx/fileheaders.conf"), and [hhvm.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/nginx/hhvm.conf "/etc/nginx/hhvm.conf") into **/etc/nginx**. 
 
+```
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/nginx.conf -O /etc/nginx/nginx.conf
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/wpsecurity.conf -O /etc/nginx/wpsecurity.conf
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/fileheaders.conf -O /etc/nginx/fileheaders.conf
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/hhvm.conf -O /etc/nginx/hhvm.conf`
+```
+
 You'll also want to move [default.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/default.conf "/etc/nginx/conf.d/default.conf") into **/etc/nginx/conf.d**. 
+
+```
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/conf.d/default.conf -O /etc/nginx/conf.d/default.conf
+```
 
 Then restart HHVM and Nginx.
 ```
@@ -272,7 +283,11 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Copy the contents of [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.conf") into your text editor of choice. You'll want to replace all instances of **yourdomain.com** to reflect your domain. Save the file and move it to **/etc/nginx/conf.d**
+Add [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.com.conf") to **/etc/nginx/conf.d**. This folder may hold as many virtual domains as you'd like, just make a new file for each domain you want to host. Tell Nginx what domain you want to serve by starting up nano and replacing all instances of **yourdomain.com** with your actual domain.
+
+```
+sudo nano /etc/nginx/conf.d/yourdomain.com.conf
+```
 
 ----------
 
