@@ -29,7 +29,7 @@ service ssh restart
 ----------
 
 ### **Nginx**
-Since HTTP2 requires an OpenSSL version of 1.0.2 or greater, we're going to compile Nginx from source so we can take advantage of this. Even though CloudFlare isn't currently supporting HTTP2 on their end, we'll be ready when they do.
+Since HTTP2 requires an OpenSSL version of 1.0.2 or greater, we're going to compile Nginx from source so we can take advantage of this.
 
 ##### **Downloading**
 First we'll need to download the latest versions of Nginx and the various modules we're using.
@@ -37,10 +37,10 @@ You'll want to check their sites to ensure you're downloading the latest version
 Get the latest versions at: [Nginx](http://nginx.org/en/download.html), [OpenSSL](https://www.openssl.org/source/), [Headers More Module](https://github.com/openresty/headers-more-nginx-module/tags), and [Nginx Cache Purge Module](http://labs.frickle.com/nginx_ngx_cache_purge/)
 ```
 cd /usr/src/
-wget http://nginx.org/download/nginx-1.10.0.tar.gz
-tar -xzvf nginx-1.10.0.tar.gz
-wget https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz
-tar -xzf v0.29.tar.gz
+wget http://nginx.org/download/nginx-1.11.0.tar.gz
+tar -xzvf nginx-1.11.0.tar.gz
+wget https://github.com/openresty/headers-more-nginx-module/archive/v0.30.tar.gz
+tar -xzf v0.30.tar.gz
 wget http://labs.frickle.com/files/ngx_cache_purge-2.3.tar.gz
 tar -xzf ngx_cache_purge-2.3.tar.gz
 wget https://www.openssl.org/source/openssl-1.0.2h.tar.gz
@@ -50,8 +50,8 @@ tar -xzf openssl-1.0.2h.tar.gz
 ##### **Installing Nginx**
 Now it's time to compile Nginx using the parts we've downloaded. Don't forget to change the openssl, cache purge, and more headers module versions inside of the `./configure` command.
 ```
-cd nginx-1.10.0
-./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2h --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.29
+cd nginx-1.11.0
+./configure --prefix=/usr/local/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --lock-path=/var/lock/nginx.lock --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --user=www-data --group=www-data --without-mail_pop3_module --with-openssl=/usr/src/openssl-1.0.2h --without-mail_imap_module --without-mail_smtp_module --without-http_uwsgi_module --without-http_scgi_module --without-http_memcached_module --with-http_ssl_module --with-http_stub_status_module --with-http_v2_module --with-debug --with-pcre-jit --with-ipv6 --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module --with-http_sub_module --with-http_xslt_module --with-mail --with-mail_ssl_module --with-stream --with-stream_ssl_module --with-threads --add-module=/usr/src/ngx_cache_purge-2.3 --add-module=/usr/src/headers-more-nginx-module-0.30
 make
 sudo checkinstall
 ```
@@ -160,11 +160,11 @@ upload_max_filesize = 22M
 ----------
 
 ### **MariaDB 10** 
-We're using the latest version of MariaDB instead of MySQL, as the performance is great with WordPress.
+We're using MariaDB instead of MySQL, as the performance is great with WordPress. Unfortunately, MariaDB's support for Ubuntu 15.04 Vivid ended with version 10.1.12. This puts us in a bit of a tricky place currently, as many VPS providers aren't supporting 15.10, and also aren't currently running OpenVZ versions of Ubuntu 16.04.
 ##### **Add MariaDB Repo** 
 ```
 sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-sudo add-apt-repository 'deb http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.0/ubuntu vivid main'
+sudo add-apt-repository 'deb http://archive.mariadb.org/mariadb-10.1.12/repo/ubuntu vivid main'
 ```
 
 ##### **Installing MariaDB** 
@@ -283,7 +283,13 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Add [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.com.conf") to **/etc/nginx/conf.d**. This folder may hold as many virtual domains as you'd like, just make a new file for each domain you want to host. Tell Nginx what domain you want to serve by starting up nano and replacing all instances of **yourdomain.com** with your actual domain.
+Add [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.com.conf") to **/etc/nginx/conf.d**. This folder may hold as many virtual domains as you'd like, just make a new file with a different name for each domain you want to host. 
+
+```
+sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/yourdomain.com.conf -O /etc/nginx/conf.d/yourdomain.com.conf
+```
+
+Tell Nginx what domain you want to serve by starting up nano and replacing all instances of **yourdomain.com** with your actual domain.
 
 ```
 sudo nano /etc/nginx/conf.d/yourdomain.com.conf
