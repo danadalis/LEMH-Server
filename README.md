@@ -8,8 +8,8 @@ We're going to walk through a basic LEMH stack install for hosting WordPress sit
 ### **Basics**
 ##### **Initial setup**
 ```
-apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
-apt-get install autotools-dev build-essential checkinstall curl debhelper dh-systemd gcc git libbz2-dev libexpat-dev libgd2-noxpm-dev libgd2-xpm-dev libgeoip-dev libgeoip-dev libluajit-5.1-dev libmhash-dev libpam0g-dev libpcre3 libpcre3-dev libpcrecpp0 libperl-dev libssl-dev libxslt-dev libxslt1-dev make nano openssl po-debconf software-properties-common sudo tar unzip wget zlib1g zlib1g-dbg zlib1g-dev -y
+sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
+sudo apt-get install autotools-dev build-essential checkinstall curl debhelper dh-systemd gcc git libbz2-dev libexpat-dev libgd2-noxpm-dev libgd2-xpm-dev libgeoip-dev libgeoip-dev libluajit-5.1-dev libmhash-dev libpam0g-dev libpcre3 libpcre3-dev libpcrecpp0 libperl-dev libssl-dev libxslt-dev libxslt1-dev make nano openssl po-debconf software-properties-common sudo tar unzip wget zlib1g zlib1g-dbg zlib1g-dev -y
 sudo locale-gen en_US.UTF-8
 export LANG=en_US.UTF-8
 ```
@@ -123,7 +123,7 @@ In the future, you can restart Nginx by typing `sudo service nginx restart`
 ### **HHVM**
 ```
 wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add -
-echo deb http://dl.hhvm.com/ubuntu vivid main | tee /etc/apt/sources.list.d/hhvm.list
+sudo echo deb http://dl.hhvm.com/ubuntu vivid main | tee /etc/apt/sources.list.d/hhvm.list
 sudo apt-get update && apt-get install hhvm -y
 ```
 
@@ -160,7 +160,9 @@ upload_max_filesize = 22M
 ----------
 
 ### **MariaDB 10** 
-We're using MariaDB instead of MySQL, as the performance is great with WordPress. Unfortunately, MariaDB's support for Ubuntu 15.04 Vivid ended with version 10.1.12. This puts us in a bit of a tricky place currently, as many VPS providers aren't supporting 15.10, and also aren't currently running OpenVZ versions of Ubuntu 16.04.
+We're using MariaDB instead of MySQL, as the performance is great with WordPress. 
+
+**Note:** Unfortunately, MariaDB's support for Ubuntu 15.04 Vivid ended with version 10.1.12. This puts us in a bit of a tricky place currently, as many VPS providers aren't supporting 15.10, and also aren't currently running OpenVZ versions of Ubuntu 16.04.
 ##### **Add MariaDB Repo** 
 ```
 sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
@@ -226,7 +228,7 @@ sudo nano /etc/nginx/nginx.conf
 #### **Get Your PHP Installation Info** 
 The newer versions of HHVM now support the `phpinfo` command, so you'll be able to get a lot of useful info about your installation. Here we're going to write a very basic php file that will give us this information. We're going to send it straight to your server's default folder, which will be **/var/www/html**. By contrast, domains will be using **/var/www/yourdomain.com/html**.
 ```
-echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+sudo echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 ```
 
 Point your browser to http://ipa.ddr.ess/phpinfo.php
@@ -260,6 +262,8 @@ exit
 
 ##### **Install WordPress** 
 We're going to create a few directories needed for WordPress, set the permissions, and download WordPress. We're also going to just remove the Hello Dolly plugin, because obviously.
+
+**Note:** We're installing files to **yourdomain.com**. In all of the commands below, change **yourdomain.com** to the name of your site.
 ```
 sudo mkdir -p /var/www/yourdomain.com/html						
 cd /var/www/yourdomain.com/html
@@ -283,13 +287,13 @@ sudo chown -hR www-data:www-data /var/www/yourdomain.com/html/
 ##### **Install Nginx Site File**
 Now that we've got the directory structure of your domain squared away, we'll need to enable it in Nginx.
 
-Add [yourdomain.com.conf](https://github.com/VisiStruct/LEMH-Server/blob/master/conf.d/yourdomain.com.conf "/etc/nginx/conf.d/yourdomain.com.conf") to **/etc/nginx/conf.d**. This folder may hold as many virtual domains as you'd like, just make a new file with a different name for each domain you want to host. 
+Add **yourdomain.com.conf** to **/etc/nginx/conf.d**. This folder may hold as many virtual domains as you'd like, just make a new file with a different name for each domain you want to host.
 
 ```
 sudo wget https://raw.githubusercontent.com/VisiStruct/LEMH-Server/master/nginx/yourdomain.com.conf -O /etc/nginx/conf.d/yourdomain.com.conf
 ```
 
-Tell Nginx what domain you want to serve by starting up nano and replacing all instances of **yourdomain.com** with your actual domain.
+Tell Nginx what domain you want to serve by starting up nano and replacing all instances of yourdomain.com with your actual domain. This needs to match the commands you entered just a few lines above, otherwise it won't work.
 
 ```
 sudo nano /etc/nginx/conf.d/yourdomain.com.conf
@@ -303,6 +307,7 @@ Here we're going to generate a self-signed SSL certificate. Since we're using Cl
 sudo openssl req -x509 -nodes -days 365000 -newkey rsa:2048 -keyout /etc/nginx/ssl/yourdomain.com.key -out /etc/nginx/ssl/yourdomain.com.crt
 cd /etc/nginx/ssl
 openssl dhparam -out yourdomain.com.pem 2048
+sudo service nginx restart && sudo service hhvm restart
 ```
 
 ----------
