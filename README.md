@@ -1,7 +1,7 @@
 ## **LEMH Server on Ubuntu 15.04 Vivid**
 ### Nginx Compiled from Source, HHVM, MariaDB 10, FastCGI Cache, HTTP2 support, and CloudFlare SSL with a Self-Signed Cert
 
-We're going to walk through a basic LEMH stack install for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB makes WordPress run faster than other options, so building a setup like this will usually get you the most bang for your hosting buck. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. We'll also be self-signing an SSL certificate on the server-side, since we're going to be using a free SSL certificate issued by CloudFlare.
+We're going to walk through a basic LEMH stack install for hosting WordPress sites. As you might have been hearing as of late, Nginx, HHVM, and MariaDB makes WordPress run faster than other options, so building a setup like this will usually get you the most bang for your hosting buck. In addition we'll also include FastCGI Cache, a rather unique method of file caching which is built right into Nginx. By using FastCGI Cache, we're bypassing the more resource-intensive solutions based off PHP and WordPress like W3 Total Cache or WP Super Cache. We'll also be self-signing an SSL certificate on the server-side, since we're going to be using a free SSL certificate issued by CloudFlare.
 
 ----------
 
